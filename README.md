@@ -1,3 +1,3 @@
-## Towny
+# Towny
 
-# A PocketMine-MP Plugin | Towny
+## A PocketMine-MP Plugin | Towny
