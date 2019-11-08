@@ -1,0 +1,3 @@
+lang: eng
+
+debug-level: 1 # if level > 1, the debug message is shown.

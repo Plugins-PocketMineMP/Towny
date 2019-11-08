@@ -2,10 +2,12 @@
 declare(strict_types=1);
 namespace Towny;
 
+use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\world\Position;
 use Towny\option\TownyOption;
+use Towny\util\Util;
 
 class Towny{
 
@@ -212,6 +214,10 @@ class Towny{
 		return $this->getPlugin()->getLanguage()->translateString("towny.role." . $this->getRole($player));
 	}
 
+	public function canJoin() : bool{
+		return $this->maxVillagers > count($this->villagers);
+	}
+
 	/**
 	 * @param Player|string $player
 	 * @param string $role
@@ -220,5 +226,32 @@ class Towny{
 	public function setRole($player, string $role) : void{
 		$this->validate($role);
 		$this->villagers[$player] = $role;
+	}
+
+	public function nbtSerialize() : CompoundTag{
+		$nbt = CompoundTag::create();
+		$nbt->setString("name", $this->name);
+		$nbt->setString("villagers", json_encode($this->villagers));
+		$nbt->setString("leader", $this->leader);
+		$nbt->setInt("maxVillagers", $this->maxVillagers);
+		$nbt->setTag("option", $this->option->nbtSerialize());
+		$nbt->setString("start", Util::pos2hash($this->start));
+		$nbt->setString("end", Util::pos2hash($this->end));
+		$nbt->setString("spawn", Util::pos2hash($this->start));
+		return $nbt;
+	}
+
+	public static function nbtDeserialize(CompoundTag $nbt) : Towny{
+		return new Towny(
+				TownyLoader::getInstance(),
+				$nbt->getString("name"),
+				Util::hash2pos($nbt->getString("start")),
+				Util::hash2pos($nbt->getString("end")),
+				Util::hash2pos($nbt->getString("spawn")),
+				json_decode($nbt->getString("villagers"), true),
+				TownyOption::nbtDeserialize($nbt->getCompoundTag("option")),
+				$nbt->getString("leader"),
+				$nbt->getInt("maxVillagers")
+		);
 	}
 }

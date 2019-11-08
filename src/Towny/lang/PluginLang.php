@@ -20,7 +20,7 @@ class PluginLang{
 
 		$this->lang = $lang;
 
-		$this->langData = parse_ini_file($this->plugin->getFile() . "lang" . DIRECTORY_SEPARATOR . $this->lang . ".ini");
+		$this->langData = parse_ini_file($this->plugin->getFile() . "resources/lang/" . $this->lang . ".ini");
 		if(!is_array($this->langData)){
 			throw new \InvalidStateException("Invalid language $this->lang");
 		}
