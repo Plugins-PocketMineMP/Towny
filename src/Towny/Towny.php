@@ -6,6 +6,8 @@ use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\player\Player;
 use pocketmine\Server;
 use pocketmine\world\Position;
+use Towny\invitation\Invitation;
+use Towny\invitation\InvitationList;
 use Towny\option\TownyOption;
 use Towny\util\Util;
 
@@ -40,6 +42,9 @@ class Towny{
 	/** @var int */
 	protected $maxVillagers = 10;
 
+	/** @var InvitationList */
+	protected $invitationList;
+
 	/** @var string */
 	protected $prefix;
 
@@ -52,7 +57,20 @@ class Towny{
 
 	public const TAG_VILLAGER = "Villager";
 
-	public function __construct(TownyLoader $plugin, string $name, Position $start, Position $end, Position $spawn, array $villagers, TownyOption $option, string $leader, int $maxVillagers){
+	/**
+	 * Towny constructor.
+	 * @param TownyLoader $plugin
+	 * @param string $name
+	 * @param Position $start
+	 * @param Position $end
+	 * @param Position $spawn
+	 * @param array $villagers
+	 * @param TownyOption $option
+	 * @param string $leader
+	 * @param int $maxVillagers
+	 * @param InvitationList $list
+	 */
+	public function __construct(TownyLoader $plugin, string $name, Position $start, Position $end, Position $spawn, array $villagers, TownyOption $option, string $leader, int $maxVillagers, InvitationList $list){
 		$this->plugin = $plugin;
 		$this->name = $name;
 		$this->start = $start;
@@ -62,6 +80,7 @@ class Towny{
 		$this->villagers = $villagers;
 		$this->option = $option;
 		$this->maxVillagers = $maxVillagers;
+		$this->invitationList = $list;
 
 		$this->prefix = "§b§l[ " . $this->getName() . "§b§l] §r§7";
 	}
@@ -204,16 +223,27 @@ class Towny{
 		$this->getPlugin()->getServer()->broadcastMessage($this->prefix . ($player !== null ? $player . " > " : "") . $message, $this->getOnlineVillagers());
 	}
 
+	/**
+	 * @param $player
+	 * @return string
+	 */
 	public function getRole($player) : string{
 		$player = $player instanceof Player ? strtolower($player->getName()) : strtolower($player);
 		return $this->villagers[$player];
 	}
 
+	/**
+	 * @param $player
+	 * @return string
+	 */
 	public function translateRole($player) : string{
 		$player = $player instanceof Player ? strtolower($player->getName()) : strtolower($player);
 		return $this->getPlugin()->getLanguage()->translateString("towny.role." . $this->getRole($player));
 	}
 
+	/**
+	 * @return bool
+	 */
 	public function canJoin() : bool{
 		return $this->maxVillagers > count($this->villagers);
 	}
@@ -228,6 +258,23 @@ class Towny{
 		$this->villagers[$player] = $role;
 	}
 
+	/**
+	 * @return InvitationList
+	 */
+	public function getInvitationList() : InvitationList{
+		return $this->invitationList;
+	}
+
+	/**
+	 * @return Invitation[]
+	 */
+	public function getAllInvitations() : array{
+		return $this->invitationList->all();
+	}
+
+	/**
+	 * @return CompoundTag
+	 */
 	public function nbtSerialize() : CompoundTag{
 		$nbt = CompoundTag::create();
 		$nbt->setString("name", $this->name);
@@ -238,9 +285,14 @@ class Towny{
 		$nbt->setString("start", Util::pos2hash($this->start));
 		$nbt->setString("end", Util::pos2hash($this->end));
 		$nbt->setString("spawn", Util::pos2hash($this->start));
+		$nbt->setTag("invitationList", $this->invitationList->nbtSerialize());
 		return $nbt;
 	}
 
+	/**
+	 * @param CompoundTag $nbt
+	 * @return Towny
+	 */
 	public static function nbtDeserialize(CompoundTag $nbt) : Towny{
 		return new Towny(
 				TownyLoader::getInstance(),
@@ -251,7 +303,8 @@ class Towny{
 				json_decode($nbt->getString("villagers"), true),
 				TownyOption::nbtDeserialize($nbt->getCompoundTag("option")),
 				$nbt->getString("leader"),
-				$nbt->getInt("maxVillagers")
+				$nbt->getInt("maxVillagers"),
+				InvitationList::nbtDeserialize($nbt->getCompoundTag("invitationList"))
 		);
 	}
 }

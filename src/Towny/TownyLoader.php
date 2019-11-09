@@ -6,6 +6,7 @@ use pocketmine\nbt\LittleEndianNbtSerializer;
 use pocketmine\nbt\TreeRoot;
 use pocketmine\plugin\PluginBase;
 use Towny\lang\PluginLang;
+use Towny\task\TownyCheckTask;
 
 class TownyLoader extends PluginBase{
 
@@ -18,6 +19,9 @@ class TownyLoader extends PluginBase{
 
 	/** @var TownyFactory */
 	protected $townyFactory;
+
+	/** @var EventListener */
+	private $listener;
 
 	public function onLoad(){
 		self::$instance = $this;
@@ -34,6 +38,13 @@ class TownyLoader extends PluginBase{
 		$this->getLogger()->info($this->lang->translateString("plugin.enabled"));
 
 		$this->townyFactory = new TownyFactory($this);
+		$this->listener = new EventListener($this);
+
+		$this->getScheduler()->scheduleRepeatingTask(new TownyCheckTask(), 20);
+	}
+
+	public function getEventListener() : EventListener{
+		return $this->listener;
 	}
 
 	public function getTownyFactory() : TownyFactory{
