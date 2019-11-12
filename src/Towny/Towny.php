@@ -45,6 +45,8 @@ class Towny{
 	/** @var InvitationList */
 	protected $invitationList;
 
+	protected $townyMoney = 0;
+
 	/** @var string */
 	protected $prefix;
 
@@ -59,18 +61,19 @@ class Towny{
 
 	/**
 	 * Towny constructor.
-	 * @param TownyLoader $plugin
-	 * @param string $name
-	 * @param Position $start
-	 * @param Position $end
-	 * @param Position $spawn
-	 * @param array $villagers
-	 * @param TownyOption $option
-	 * @param string $leader
-	 * @param int $maxVillagers
+	 * @param TownyLoader    $plugin
+	 * @param string         $name
+	 * @param Position       $start
+	 * @param Position       $end
+	 * @param Position       $spawn
+	 * @param array          $villagers
+	 * @param TownyOption    $option
+	 * @param string         $leader
+	 * @param int            $maxVillagers
 	 * @param InvitationList $list
+	 * @param int            $townyMoney
 	 */
-	public function __construct(TownyLoader $plugin, string $name, Position $start, Position $end, Position $spawn, array $villagers, TownyOption $option, string $leader, int $maxVillagers, InvitationList $list){
+	public function __construct(TownyLoader $plugin, string $name, Position $start, Position $end, Position $spawn, array $villagers, TownyOption $option, string $leader, int $maxVillagers, InvitationList $list, int $townyMoney){
 		$this->plugin = $plugin;
 		$this->name = $name;
 		$this->start = $start;
@@ -81,6 +84,7 @@ class Towny{
 		$this->option = $option;
 		$this->maxVillagers = $maxVillagers;
 		$this->invitationList = $list;
+		$this->townyMoney = $townyMoney;
 
 		$this->prefix = "§b§l[ " . $this->getName() . "§b§l] §r§7";
 	}
@@ -168,7 +172,7 @@ class Towny{
 
 	/**
 	 * @param Player|string $player
-	 * @param string $role
+	 * @param string        $role
 	 * @return bool
 	 * @throws \InvalidArgumentException
 	 */
@@ -189,7 +193,7 @@ class Towny{
 
 	/**
 	 * @param Player|string $player
-	 * @param bool $force
+	 * @param bool          $force
 	 * @return bool
 	 */
 	public function removeVillager($player, bool $force = false) : bool{
@@ -216,8 +220,8 @@ class Towny{
 	}
 
 	/**
-	 * @param string $message
-	 * @param null $player
+	 * @param string      $message
+	 * @param string|null $player
 	 */
 	public function broadcastMessage(string $message, $player = null){
 		$this->getPlugin()->getServer()->broadcastMessage($this->prefix . ($player !== null ? $player . " > " : "") . $message, $this->getOnlineVillagers());
@@ -250,7 +254,7 @@ class Towny{
 
 	/**
 	 * @param Player|string $player
-	 * @param string $role
+	 * @param string        $role
 	 * @throws \InvalidArgumentException
 	 */
 	public function setRole($player, string $role) : void{
@@ -272,6 +276,47 @@ class Towny{
 		return $this->invitationList->all();
 	}
 
+	public function increaseVillagerCount() : void{
+		$this->maxVillagers += 10;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getTownyMoney() : int{
+		return $this->townyMoney;
+	}
+
+	/**
+	 * @param int $money
+	 */
+	public function addTownyMoney(int $money) : void{
+		$this->townyMoney += $money;
+	}
+
+	/**
+	 * @param int $money
+	 * @return bool
+	 */
+	public function reduceTownyMoney(int $money) : bool{
+		if($this->townyMoney - $money < 0){
+			return false;
+		}
+		$this->townyMoney -= $money;
+		return true;
+	}
+
+	/**
+	 * Collect the tax.
+	 *
+	 * not yet
+	 */
+	public function tax() : void{
+		$money = $this->getTownyMoney();
+
+		$tax = (int) ($money / (100 / 0.05));
+	}
+
 	/**
 	 * @return CompoundTag
 	 */
@@ -285,7 +330,8 @@ class Towny{
 		$nbt->setString("start", Util::pos2hash($this->start));
 		$nbt->setString("end", Util::pos2hash($this->end));
 		$nbt->setString("spawn", Util::pos2hash($this->start));
-		$nbt->setTag("invitationList", $this->invitationList->nbtSerialize());
+		//$nbt->setTag("invitationList", $this->invitationList->nbtSerialize());
+		$nbt->setInt("townyMoney", $this->townyMoney);
 		return $nbt;
 	}
 
@@ -304,7 +350,8 @@ class Towny{
 				TownyOption::nbtDeserialize($nbt->getCompoundTag("option")),
 				$nbt->getString("leader"),
 				$nbt->getInt("maxVillagers"),
-				InvitationList::nbtDeserialize($nbt->getCompoundTag("invitationList"))
+				/*InvitationList::nbtDeserialize($nbt->getCompoundTag("invitationList")), */ new InvitationList([]),
+				$nbt->getInt("townyMoney")
 		);
 	}
 }

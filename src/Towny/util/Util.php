@@ -18,6 +18,6 @@ class Util{
 	}
 
 	public static function generateRandomHash() : string{
-		return UUID::fromRandom()->toString();
+		return substr(UUID::fromRandom()->toString(), 0, 4);
 	}
 }

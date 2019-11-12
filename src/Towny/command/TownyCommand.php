@@ -14,7 +14,7 @@ class TownyCommand extends PluginCommand implements PluginIdentifiableCommand{
 
 	protected $subCommands = [];
 
-	public function __construct(string $name, string $description, string $usage, array $alias = []){
+	public function __construct(string $name, string $description, string $usage = "", array $alias = []){
 		parent::__construct($name, TownyLoader::getInstance());
 		$this->setDescription($description);
 		$this->setUsage($usage);

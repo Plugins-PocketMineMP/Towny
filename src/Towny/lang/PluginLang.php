@@ -26,6 +26,10 @@ class PluginLang{
 		}
 	}
 
+	public function getLang() : string{
+		return $this->lang;
+	}
+
 	/**
 	 * @param string $str
 	 * @param array $input

@@ -47,7 +47,7 @@ class Invitation{
 
 	public static function nbtDeserialize(CompoundTag $nbt) : Invitation{
 		return new Invitation(
-				$nbt->getString("message"),
+				$nbt->getString("message",""),
 				$nbt->getString("player"),
 				$nbt->getString("requestData"),
 				$nbt->getString("hash")

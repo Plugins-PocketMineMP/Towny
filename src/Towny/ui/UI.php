@@ -11,12 +11,18 @@ abstract class UI{
 
 	private static $plugin;
 
+	public static $uiMessage = "towny.ui.";
+
+	public static $message = "towny.message.";
+
 	public static function init(){
 		self::$plugin = TownyLoader::getInstance();
+
+		self::$formIds[CreateUI::getFormId()] = new CreateUI();
 	}
 
 	final public static function getPlugin() : TownyLoader{
-		return self::$plugin;
+		return self::$plugin ?? self::$plugin = TownyLoader::getInstance();
 	}
 
 	final public static function getFormById(int $id) : ?UI{

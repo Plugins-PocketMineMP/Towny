@@ -13,14 +13,14 @@ abstract class SubCommand{
 
 	protected $plugin;
 
-	public function __construct(string $name, bool $isOp = false){
+	public function __construct(TownyLoader $plugin, string $name, bool $isOp = false){
 		$this->name = $name;
 		$this->isOp = $isOp;
-		$this->plugin = TownyLoader::getInstance();
+		$this->plugin = $plugin;
 	}
 
 	public function getPlugin() : TownyLoader{
-		return $this->plugin;
+		return $this->plugin ?? $this->plugin = TownyLoader::getInstance();
 	}
 
 	public function hasPermission(CommandSender $sender) : bool{

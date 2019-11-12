@@ -5,8 +5,10 @@ namespace Towny;
 use pocketmine\nbt\LittleEndianNbtSerializer;
 use pocketmine\nbt\TreeRoot;
 use pocketmine\plugin\PluginBase;
+use Towny\command\CommandManager;
 use Towny\lang\PluginLang;
 use Towny\task\TownyCheckTask;
+use Towny\ui\UI;
 
 class TownyLoader extends PluginBase{
 
@@ -41,6 +43,10 @@ class TownyLoader extends PluginBase{
 		$this->listener = new EventListener($this);
 
 		$this->getScheduler()->scheduleRepeatingTask(new TownyCheckTask(), 20);
+
+		UI::init();
+
+		CommandManager::registerAll($this);
 	}
 
 	public function getEventListener() : EventListener{

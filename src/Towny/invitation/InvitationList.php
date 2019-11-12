@@ -11,7 +11,9 @@ class InvitationList{
 
 	public function __construct(array $invitations){
 		foreach($invitations as $invitation){
-			$this->add($invitation);
+			if($invitation !== null){
+				$this->add($invitation);
+			}
 		}
 	}
 
@@ -31,13 +33,16 @@ class InvitationList{
 	}
 
 	public function nbtSerialize() : CompoundTag{
-		$tag = CompoundTag::create();
-		foreach($this->invitations as $invitation){
-			$tag->setTag($invitation->getPlayer(), $invitation->nbtSerialize());
-		}
+		if(!empty($this->invitations)){
+			$tag = CompoundTag::create();
+			foreach($this->invitations as $invitation){
+				$tag->setTag($invitation->getPlayer(), $invitation->nbtSerialize());
+			}
 
-		return CompoundTag::create()
-				->setTag("Invitations", $tag);
+			return CompoundTag::create()
+					->setTag("Invitations", $tag);
+		}
+		return CompoundTag::create();
 	}
 
 	public static function nbtDeserialize(CompoundTag $nbt) : InvitationList{
