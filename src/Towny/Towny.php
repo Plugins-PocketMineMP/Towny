@@ -73,7 +73,7 @@ class Towny{
 	 * @param InvitationList $list
 	 * @param int            $townyMoney
 	 */
-	public function __construct(TownyLoader $plugin, string $name, Position $start, Position $end, Position $spawn, array $villagers, TownyOption $option, string $leader, int $maxVillagers, InvitationList $list, int $townyMoney){
+	public function __construct(TownyLoader $plugin, string $name, Position $start, Position $end, Position $spawn, array $villagers, TownyOption $option, string $leader, int $maxVillagers, ?InvitationList $list, int $townyMoney){
 		$this->plugin = $plugin;
 		$this->name = $name;
 		$this->start = $start;
@@ -83,7 +83,7 @@ class Towny{
 		$this->villagers = $villagers;
 		$this->option = $option;
 		$this->maxVillagers = $maxVillagers;
-		$this->invitationList = $list;
+		$this->invitationList = $list ?? new InvitationList([]);
 		$this->townyMoney = $townyMoney;
 
 		$this->prefix = "§b§l[ " . $this->getName() . "§b§l] §r§7";
@@ -330,7 +330,9 @@ class Towny{
 		$nbt->setString("start", Util::pos2hash($this->start));
 		$nbt->setString("end", Util::pos2hash($this->end));
 		$nbt->setString("spawn", Util::pos2hash($this->start));
-		//$nbt->setTag("invitationList", $this->invitationList->nbtSerialize());
+		if(!empty($this->invitationList->all())){
+			$nbt->setTag("InvitationList", $this->invitationList->nbtSerialize());
+		}
 		$nbt->setInt("townyMoney", $this->townyMoney);
 		return $nbt;
 	}
@@ -350,7 +352,7 @@ class Towny{
 				TownyOption::nbtDeserialize($nbt->getCompoundTag("option")),
 				$nbt->getString("leader"),
 				$nbt->getInt("maxVillagers"),
-				/*InvitationList::nbtDeserialize($nbt->getCompoundTag("invitationList")), */ new InvitationList([]),
+				InvitationList::nbtDeserialize($nbt->getCompoundTag("invitationList") ?? CompoundTag::create()),
 				$nbt->getInt("townyMoney")
 		);
 	}
